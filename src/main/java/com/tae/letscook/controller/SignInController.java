@@ -19,7 +19,7 @@ public class SignInController {
 	private SignInService signInService;
 	
 	@RequestMapping (value=Constants.SIGN_IN_ENDPOINT, method=RequestMethod.POST)
-	public @ResponseBody Chef getRecipes(@RequestParam String authcode){
+	public @ResponseBody Chef signIn(@RequestParam String authcode){
 		System.out.println("Login Controller - authorize user with auth code: " + authcode );
 		return signInService.authorizeUser(authcode);
 	}
