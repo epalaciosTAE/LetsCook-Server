@@ -13,5 +13,7 @@ public class Constants {
 	
 	public final static String QUERY = "query";
 	public static final String CHEF = "/chef";
+	public static final String EVENT = CHEF +  "/{id}/event";
+    public static final String EVENTS = CHEF + "/events";
 
 }

@@ -23,7 +23,7 @@ public class ChefController {
 	private ChefService chefService;
 	
 	@RequestMapping (value=Constants.CHEF, method=RequestMethod.POST)
-	public @ResponseBody Chef getRecipes(@RequestBody Chef chef, HttpServletResponse response){
+	public @ResponseBody Chef saveChef(@RequestBody Chef chef, HttpServletResponse response){
 		System.out.println("Chef Controller - chef to save: " + chef.getName());
 		Chef savedChef = chefService.saveChef(chef);
 		if(savedChef == null){
