@@ -1,6 +1,9 @@
 package com.tae.letscook.service;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -8,9 +11,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.tae.letscook.manager.RecipeFileManager;
+import com.tae.letscook.model.CustomIngredient;
+import com.tae.letscook.model.CustomRecipe;
+import com.tae.letscook.model.ServerRecipe;
 import com.tae.letscook.model.edaman.EdamanApiModel;
 import com.tae.letscook.model.edaman.Hit;
 import com.tae.letscook.model.edaman.Recipe;
+import com.tae.letscook.repository.CustomIngredientRepository;
+import com.tae.letscook.repository.CustomRecipeRepository;
 import com.tae.letscook.utils.RecipesGenerator;
 import com.tae.letscook.utils.UrlParamsUtils;
 
@@ -23,6 +32,12 @@ public class RecipesService {
 	
 	@Autowired
 	RestTemplate restTemplate;
+	
+	@Autowired
+	CustomIngredientRepository ingredientRepo;
+	
+	@Autowired
+	CustomRecipeRepository recipeRepo;
 	
 	/**
 	 * getUrlParams creates a map with the user query and the tipe of recipe that is looking for.
@@ -93,6 +108,107 @@ public class RecipesService {
 //		Recipe recipe = recipes.get(0).getRecipe();
 //		recipesToReturn.add(recipe);
 		return recipesToReturn;
+	}
+
+	public CustomRecipe saveCustomRecipe(CustomRecipe recipe) {
+		for(CustomIngredient ingredient : recipe.getIngredients()){
+			ingredient.setUserId(recipe.getChefId());
+			ingredientRepo.save(ingredient);
+		}
+		ServerRecipe tempRecipe = recipeRepo.save(new ServerRecipe(
+				recipe.getTitle(),
+				recipe.getImagePath(),
+				recipe.getBudget(),
+				recipe.getLevel(),
+				recipe.getPeople(),
+				recipe.getTime(),
+				recipe.getChefName(),
+				recipe.getChefId()));
+		
+		return createCustomRecipe(tempRecipe, recipe.getIngredients());
+	}
+	
+	
+	public CustomRecipe getRecipeById(long id) {
+		ServerRecipe tempRecipe = recipeRepo.findOne(id);
+		return createCustomRecipe(tempRecipe);
+	}
+	
+	private CustomRecipe createCustomRecipe(ServerRecipe tempRecipe) {
+		return new CustomRecipe(
+				tempRecipe.getId(),
+				tempRecipe.getTitle(),
+				tempRecipe.getImagePath(),
+				tempRecipe.getBudget(),
+				tempRecipe.getLevel(),
+				tempRecipe.getPeople(), 
+				tempRecipe.getTime(),
+				tempRecipe.getChefName(),
+				tempRecipe.getChefId());
+	}
+
+	private CustomRecipe createCustomRecipe(ServerRecipe tempRecipe, List<CustomIngredient> ingredients) {
+		return new CustomRecipe(
+				tempRecipe.getId(),
+				tempRecipe.getTitle(),
+				tempRecipe.getImagePath(),
+				tempRecipe.getBudget(),
+				tempRecipe.getLevel(),
+				tempRecipe.getPeople(), 
+				tempRecipe.getTime(),
+				tempRecipe.getChefName(),
+				tempRecipe.getChefId(),
+				ingredients);
+	}
+
+	public void setData(CustomRecipe recipe) {
+//		recipeRepo.save(selfie);
+		ServerRecipe tempRecipe = recipeRepo.save(new ServerRecipe(
+				recipe.getTitle(),
+				recipe.getImagePath(),
+				recipe.getBudget(),
+				recipe.getLevel(),
+				recipe.getPeople(),
+				recipe.getTime(),
+				recipe.getChefName(),
+				recipe.getChefId()));
+		
+	}
+
+	public List<CustomRecipe> getCustomRecipes() {
+		List<ServerRecipe> serverRecipes = convertCollectionToList((Collection<ServerRecipe>) recipeRepo.findAll());
+		List<CustomRecipe> recipes = new ArrayList<>(serverRecipes.size());
+		for(ServerRecipe serviceRecipe : serverRecipes){
+			recipes.add(createCustomRecipe(serviceRecipe));
+		}
+		List<CustomIngredient> ingredients = convertCollectionToList((Collection<CustomIngredient>) ingredientRepo.findAll());
+		for(CustomRecipe recipe : recipes){
+			List<CustomIngredient> tempIngredients = new ArrayList<>();
+			for(CustomIngredient ingredient : ingredients){
+				if(recipe.getChefId().equals(ingredient.getUserId())){
+					tempIngredients.add(ingredient);
+				}
+			}
+			try {
+				recipe.setImageServerPath(RecipeFileManager.get().getSelfiePath(recipe).toAbsolutePath().toString());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			recipe.setIngredients(tempIngredients);
+		}
+		return recipes;
+	}
+	
+	private <T>List<T> convertCollectionToList (Collection<T> eventsCol){
+		List<T> events = new ArrayList<T>(eventsCol.size());
+		for (Iterator iterator = eventsCol.iterator(); iterator.hasNext();) {
+		        events.add((T) iterator.next());
+		    }
+		return events;
+	}
+
+	public CustomRecipe getCustomRecipeById(long id) {
+		return createCustomRecipe(recipeRepo.findOne(id));
 	}
 
 	

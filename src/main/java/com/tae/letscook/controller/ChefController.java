@@ -22,7 +22,7 @@ public class ChefController {
 	@Autowired
 	private ChefService chefService;
 	
-	@RequestMapping (value=Constants.CHEF, method=RequestMethod.POST)
+	@RequestMapping (value=Constants.CHEF, method=RequestMethod.POST, produces="application/json")
 	public @ResponseBody Chef saveChef(@RequestBody Chef chef, HttpServletResponse response){
 		System.out.println("Chef Controller - chef to save: " + chef.getName());
 		Chef savedChef = chefService.saveChef(chef);

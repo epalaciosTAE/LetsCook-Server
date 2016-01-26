@@ -15,5 +15,10 @@ public class Constants {
 	public static final String CHEF = "/chef";
 	public static final String EVENT = CHEF +  "/{id}/event";
     public static final String EVENTS = CHEF + "/events";
+	public static final String USER_RECIPES = CHEF + "/{id}/recipes";
+	public static final String USER_RECIPES_DATA = USER_RECIPES + "/data";
+	 public static final String DATA_IMAGE = "data_image";
+	public static final String ID_PARAMETER = "id";
+	 public static final String USER_RECIPES_IMAGES = USER_RECIPES + "/images";
 
 }
